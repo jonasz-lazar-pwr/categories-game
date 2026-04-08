@@ -1,0 +1,71 @@
+# === infra/docker-compose.dev.yml ===
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: categories-game-postgres-dev
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    image: node:22-alpine
+    container_name: categories-game-backend-dev
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+    ports:
+      - '${PORT}:${PORT}'
+    volumes:
+      - ../backend:/app
+      - backend_node_modules:/app/node_modules
+      - backend_generated:/app/generated
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "npm install && npx prisma generate && npx prisma migrate deploy && npm run dev"
+
+  frontend:
+    image: node:22-alpine
+    container_name: categories-game-frontend-dev
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+    ports:
+      - '5173:5173'
+    volumes:
+      - ../frontend:/app
+      - frontend_node_modules:/app/node_modules
+    networks:
+      - app-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+    command: sh -c "npm install && npm run dev -- --host"
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+  backend_generated:
+  frontend_node_modules:
+
+networks:
+  app-network:
+    driver: bridge
