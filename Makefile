@@ -8,7 +8,7 @@ COMPOSE_PROD = docker compose -f infra/docker-compose.yml
 	dev dev-down dev-rebuild dev-logs \
 	dev-shell-backend dev-shell-frontend dev-shell-db \
 	prod prod-down prod-rebuild prod-logs \
-	migrate db-studio db-reset \
+	generate migrate db-studio db-reset \
 	clean clean-docker clean-docker-volumes help
 
 .DEFAULT_GOAL := help
@@ -61,7 +61,7 @@ dev-shell-frontend:
 	$(COMPOSE_DEV) exec frontend sh
 
 dev-shell-db:
-	$(COMPOSE_DEV) exec postgres psql -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+	$(COMPOSE_DEV) exec postgres psql -U ${POSTGRES_USER} -d ${POSTGRES_DB}
 
 # ===========================
 # Docker — prod
@@ -83,6 +83,9 @@ prod-logs:
 # ===========================
 # Database
 # ===========================
+
+generate:
+	$(COMPOSE_DEV) exec backend npx prisma generate
 
 migrate:
 	$(COMPOSE_DEV) exec backend npx prisma migrate dev
@@ -124,7 +127,7 @@ help:
 	@echo "  install              Install dependencies in backend and frontend"
 	@echo "  format               Format code with Prettier"
 	@echo "  lint                 Lint code with ESLint"
-	@echo "  test                 Run tests"
+	@echo "  test                 Run unit tests in backend and frontend"
 	@echo "  check                Format + lint + type-check + test"
 	@echo ""
 	@echo "Docker — dev"
@@ -143,6 +146,7 @@ help:
 	@echo "  prod-logs            Stream logs from all prod containers"
 	@echo ""
 	@echo "Database"
+	@echo "  generate             Generate Prisma Client from schema"
 	@echo "  migrate              Create and apply new migration (interactive)"
 	@echo "  db-studio            Open Prisma Studio"
 	@echo "  db-reset             Reset dev database (WARNING: deletes all data)"

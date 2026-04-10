@@ -1,5 +1,8 @@
 {
   "editor.formatOnSave": true,
+  "css.customData": [
+    ".vscode/tailwind.json"
+  ],
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
@@ -11,7 +14,10 @@
   "explorer.fileNesting.patterns": {
     "tsconfig.json": "tsconfig.*.json, env.d.ts",
     "vite.config.*": "vitest.config.*",
-    "package.json": "package-lock.json, .eslint*, eslint*, .prettier*, prettier*, .editorconfig"
+    "package.json": "package-lock.json, .eslint*, eslint*, .prettier*, prettier*, .editorconfig",
+    "prisma.config.ts": "prisma.config.*"
   },
-  "makefile.configureOnOpen": false
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
 }

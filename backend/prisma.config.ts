@@ -1,12 +1,16 @@
 // === backend/prisma.config.ts ===
+
 import { defineConfig } from 'prisma/config'
 
 export default defineConfig({
-  schema: 'prisma/schema.prisma',
-  migrations: {
-    path: 'prisma/migrations',
-  },
+  schema: 'prisma',
   datasource: {
     url: process.env['DATABASE_URL'] as string,
+  },
+  migrate: {
+    async adapter() {
+      const { PrismaPg } = await import('@prisma/adapter-pg')
+      return new PrismaPg({ connectionString: process.env['DATABASE_URL'] as string })
+    },
   },
 })

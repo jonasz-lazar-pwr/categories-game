@@ -1,6 +1,5 @@
-// === backend/src/main.ts ===
+// === src/main.ts ===
 
-console.log('Server starting...')
-console.log('Hot reload works!')
+import { bootstrap } from '#/bootstrap.js'
 
-export {}
+await bootstrap()

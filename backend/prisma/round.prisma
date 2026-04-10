@@ -1,0 +1,54 @@
+// === prisma/round.prisma ===
+
+enum RoundStatus {
+  answering
+  closing
+  verification
+  finished
+}
+
+model Round {
+  id              String      @id @default(uuid())
+  gameId          String
+  roundNumber     Int
+  letter          String      @db.Char(1)
+  status          RoundStatus @default(answering)
+  closingDeadline DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  game          Game            @relation(fields: [gameId], references: [id])
+  playerAnswers PlayerAnswers[]
+  verification  Verification?
+
+  @@unique([gameId, roundNumber])
+  @@map("rounds")
+}
+
+model PlayerAnswers {
+  id          String    @id @default(uuid())
+  roundId     String
+  playerId    String
+  submittedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  round   Round    @relation(fields: [roundId], references: [id])
+  player  Player   @relation(fields: [playerId], references: [id])
+  answers Answer[]
+
+  @@unique([roundId, playerId])
+  @@map("player_answers")
+}
+
+model Answer {
+  id              String @id @default(uuid())
+  playerAnswersId String
+  gameCategoryId  String
+  value           String @default("")
+
+  playerAnswers PlayerAnswers @relation(fields: [playerAnswersId], references: [id])
+
+  @@unique([playerAnswersId, gameCategoryId])
+  @@map("answers")
+}

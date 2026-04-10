@@ -13,6 +13,27 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@composables/*": [
+        "./src/composables/*"
+      ],
+      "@stores/*": [
+        "./src/stores/*"
+      ],
+      "@views/*": [
+        "./src/views/*"
+      ],
+      "@services/*": [
+        "./src/services/*"
+      ],
+      "@router/*": [
+        "./src/router/*"
+      ],
+      "@shared/*": [
+        "./src/shared/*"
       ]
     },
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"

@@ -1,0 +1,114 @@
+/* === frontend/src/assets/main.css === */
+
+@import 'tailwindcss';
+@import '@fontsource-variable/outfit';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+@theme {
+  /* ===========================
+     Typography
+     =========================== */
+  --font-sans: 'Outfit Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --font-size-xs: clamp(0.64rem, 0.6vw + 0.5rem, 0.75rem);
+  --font-size-sm: clamp(0.8rem, 0.7vw + 0.6rem, 0.875rem);
+  --font-size-base: clamp(1rem, 0.8vw + 0.75rem, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 1vw + 0.8rem, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 1.5vw + 0.85rem, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 2vw + 0.9rem, 2rem);
+  --font-size-3xl: clamp(1.875rem, 3vw + 0.9rem, 2.5rem);
+  --font-size-4xl: clamp(2.25rem, 4vw + 0.9rem, 3.5rem);
+
+  /* ===========================
+     Spacing
+     =========================== */
+  --spacing-1: clamp(0.25rem, 0.5vw + 0.1rem, 0.5rem);
+  --spacing-2: clamp(0.5rem, 0.8vw + 0.2rem, 0.75rem);
+  --spacing-3: clamp(0.75rem, 1vw + 0.3rem, 1rem);
+  --spacing-4: clamp(1rem, 1.5vw + 0.4rem, 1.5rem);
+  --spacing-6: clamp(1.5rem, 2vw + 0.5rem, 2rem);
+  --spacing-8: clamp(2rem, 3vw + 0.6rem, 3rem);
+
+  /* ===========================
+     Colors
+     =========================== */
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.145 0 0);
+  --color-primary: oklch(0.55 0.2 250);
+  --color-primary-foreground: oklch(0.985 0 0);
+  --color-muted: oklch(0.96 0 0);
+  --color-muted-foreground: oklch(0.45 0 0);
+  --color-border: oklch(0.9 0 0);
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-success: oklch(0.723 0.191 149.579);
+  --color-warning: oklch(0.795 0.184 86.047);
+
+  /* ===========================
+     Radius
+     =========================== */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* ===========================
+     Transitions
+     =========================== */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 150ms var(--ease-out-expo);
+  --transition-normal: 300ms var(--ease-out-expo);
+  --transition-slow: 500ms var(--ease-out-expo);
+}
+
+/* ===========================
+   Dark mode
+   =========================== */
+.dark {
+  --color-background: oklch(0.145 0 0);
+  --color-foreground: oklch(0.985 0 0);
+  --color-primary: oklch(0.65 0.18 250);
+  --color-muted: oklch(0.2 0 0);
+  --color-muted-foreground: oklch(0.65 0 0);
+  --color-border: oklch(0.25 0 0);
+}
+
+/* ===========================
+   Base styles
+   =========================== */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    accent-color: var(--color-primary);
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+    display: block;
+  }
+}

@@ -1,0 +1,58 @@
+// === prisma/scoring.prisma ===
+
+enum VerificationStatus {
+  pending
+  in_progress
+  finished
+}
+
+model Verification {
+  id              String             @id @default(uuid())
+  roundId         String             @unique
+  gameId          String
+  status          VerificationStatus @default(pending)
+  cursorPlayerId  String?
+  cursorCategoryId String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  round Round                @relation(fields: [roundId], references: [id])
+  items AnswerVerification[]
+
+  @@map("verifications")
+}
+
+model AnswerVerification {
+  id             String   @id @default(uuid())
+  verificationId String
+  playerId       String
+  gameCategoryId String
+  value          String
+  aiScore        Int?
+  aiReasoning    String?
+  isAccepted     Boolean?
+  isResolved     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  verification Verification @relation(fields: [verificationId], references: [id])
+  gameCategory GameCategory @relation(fields: [gameCategoryId], references: [id])
+  votes        Vote[]
+
+  @@unique([verificationId, playerId, gameCategoryId])
+  @@map("answer_verifications")
+}
+
+model Vote {
+  id                   String   @id @default(uuid())
+  answerVerificationId String
+  voterId              String
+  accepted             Boolean
+  createdAt            DateTime @default(now())
+
+  answerVerification AnswerVerification @relation(fields: [answerVerificationId], references: [id])
+  voter              Player             @relation(fields: [voterId], references: [id])
+
+  @@unique([answerVerificationId, voterId])
+  @@map("votes")
+}

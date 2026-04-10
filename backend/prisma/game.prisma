@@ -1,0 +1,88 @@
+// === prisma/game.prisma ===
+
+enum GameStatus {
+  lobby
+  active
+  finished
+  cancelled
+}
+
+enum AlphabetPreset {
+  PL_WITH_DIACRITICS
+  PL_WITHOUT_DIACRITICS
+  EN
+}
+
+model Game {
+  id                       String         @id @default(uuid())
+  code                     String         @unique
+  status                   GameStatus     @default(lobby)
+  hostId                   String
+  alphabetPreset           AlphabetPreset
+  roundCount               Int
+  currentRoundNumber       Int            @default(0)
+  usedLetters              String[]
+  uniqueOnlyPoints         Int
+  uniquePoints             Int
+  duplicatePoints          Int
+  closingTimeSeconds       Int
+  verificationTimeoutSeconds Int
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+
+  host       User             @relation(fields: [hostId], references: [id])
+  players    Player[]
+  categories GameCategory[]
+  rounds     Round[]
+
+  @@map("games")
+}
+
+model Player {
+  id          String   @id @default(uuid())
+  gameId      String
+  userId      String?
+  nick        String
+  isHost      Boolean  @default(false)
+  isConnected Boolean  @default(false)
+  socketId    String?
+  score       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  game          Game           @relation(fields: [gameId], references: [id])
+  playerAnswers PlayerAnswers[]
+  votes         Vote[]
+
+  @@unique([gameId, nick])
+  @@map("players")
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  games GameCategory[]
+
+  @@map("categories")
+}
+
+model GameCategory {
+  id          String @id @default(uuid())
+  gameId      String
+  categoryId  String
+  name        String
+  description String
+
+  game     Game     @relation(fields: [gameId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  answerVerifications AnswerVerification[]
+
+  @@unique([gameId, categoryId])
+  @@map("game_categories")
+}

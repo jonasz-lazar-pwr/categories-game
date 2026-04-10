@@ -17,6 +17,7 @@ export default tseslint.config(
     '**/coverage/**',
     'eslint.config.ts',
     'prisma.config.ts',
+    'vitest.config.ts',
   ]),
 
   ...tseslint.configs.recommendedTypeChecked,
@@ -34,6 +35,14 @@ export default tseslint.config(
       '@typescript-eslint/explicit-member-accessibility': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
+    },
+  },
+
+  {
+    name: 'app/test-overrides',
+    files: ['**/__tests__/**/*.ts', '**/*.spec.ts', '**/*.setup.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
 

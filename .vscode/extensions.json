@@ -5,6 +5,7 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "editorconfig.editorconfig",
+    "bradlc.vscode-tailwindcss",
     "prisma.prisma",
     "ms-azuretools.vscode-docker"
   ]
