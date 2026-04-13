@@ -9,8 +9,8 @@ import { UserEmailVo } from '#/Identity/Domain/ValueObjects/UserEmailVo.js'
 import { UserNickVo } from '#/Identity/Domain/ValueObjects/UserNickVo.js'
 import { UserPasswordHashVo } from '#/Identity/Domain/ValueObjects/UserPasswordHashVo.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
-import type { UserRepository } from '#/Identity/Domain/UserRepository.js'
-import type { PasswordVerifier } from '#/Identity/Application/LoginUserService.js'
+import type { IUserRepository } from '#/Identity/Domain/UserRepository.js'
+import type { IPasswordVerifier } from '#/Identity/Application/LoginUserService.js'
 
 const USER_ID = '550e8400-e29b-41d4-a716-446655440000'
 
@@ -24,8 +24,8 @@ const makeUser = (): UserAggregate =>
   )
 
 describe('LoginUserService', () => {
-  let repository: UserRepository
-  let passwordVerifier: PasswordVerifier
+  let repository: IUserRepository
+  let passwordVerifier: IPasswordVerifier
   let service: LoginUserService
 
   beforeEach(() => {

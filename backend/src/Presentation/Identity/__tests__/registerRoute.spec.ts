@@ -8,8 +8,8 @@ import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import { ConflictError } from '#/shared/errors/ConflictError.js'
 import type { RegisterUserService } from '#/Identity/Application/RegisterUserService.js'
 import type { PasswordService } from '#/Identity/Infrastructure/PasswordService.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
-import type { GetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
+import type { IGetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
 import { GetUserProfileDto } from '#/Identity/Application/ReadDto/GetUserProfileDto.js'
 
 const validBody = { email: 'user@example.com', nick: 'validnick', password: 'password123' }
@@ -17,8 +17,8 @@ const validBody = { email: 'user@example.com', nick: 'validnick', password: 'pas
 const makeServices = (): {
   registerUserService: RegisterUserService
   passwordService: PasswordService
-  jwtService: JwtService
-  getUserProfileQuery: GetUserProfileQuery
+  jwtService: IJwtService
+  getUserProfileQuery: IGetUserProfileQuery
 } => ({
   registerUserService: { execute: vi.fn() } as unknown as RegisterUserService,
   passwordService: { hash: vi.fn(), verify: vi.fn() } as unknown as PasswordService,
@@ -27,8 +27,8 @@ const makeServices = (): {
     signRefresh: vi.fn().mockReturnValue('refresh-token'),
     verifyAccess: vi.fn(),
     verifyRefresh: vi.fn(),
-  } as unknown as JwtService,
-  getUserProfileQuery: { execute: vi.fn() } as unknown as GetUserProfileQuery,
+  } as unknown as IJwtService,
+  getUserProfileQuery: { execute: vi.fn() } as unknown as IGetUserProfileQuery,
 })
 
 describe('registerRoute', () => {

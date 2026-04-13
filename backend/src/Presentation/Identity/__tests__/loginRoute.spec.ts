@@ -6,14 +6,14 @@ import cookie from '@fastify/cookie'
 import { loginRoute } from '#/Presentation/Identity/loginRoute.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import type { LoginUserService } from '#/Identity/Application/LoginUserService.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
-import type { GetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
+import type { IGetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
 import { GetUserProfileDto } from '#/Identity/Application/ReadDto/GetUserProfileDto.js'
 
 const makeServices = (): {
   loginUserService: LoginUserService
-  jwtService: JwtService
-  getUserProfileQuery: GetUserProfileQuery
+  jwtService: IJwtService
+  getUserProfileQuery: IGetUserProfileQuery
 } => ({
   loginUserService: { execute: vi.fn() } as unknown as LoginUserService,
   jwtService: {
@@ -21,8 +21,8 @@ const makeServices = (): {
     signRefresh: vi.fn().mockReturnValue('refresh-token'),
     verifyAccess: vi.fn(),
     verifyRefresh: vi.fn(),
-  } as unknown as JwtService,
-  getUserProfileQuery: { execute: vi.fn() } as unknown as GetUserProfileQuery,
+  } as unknown as IJwtService,
+  getUserProfileQuery: { execute: vi.fn() } as unknown as IGetUserProfileQuery,
 })
 
 describe('loginRoute', () => {

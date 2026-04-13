@@ -7,9 +7,10 @@ import { ConflictError } from '#/shared/errors/ConflictError.js'
 import { RegisterUserCommand } from '#/Identity/Application/CommandDto/RegisterUserCommand.js'
 import type { FastifyInstance } from 'fastify'
 import type { RegisterUserService } from '#/Identity/Application/RegisterUserService.js'
-import type { PasswordService } from '#/Identity/Infrastructure/PasswordService.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
-import type { GetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import type { IPasswordHasher } from '#/Identity/Application/IPasswordHasher.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
+import type { IGetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import { REFRESH_TOKEN_MAX_AGE_SECONDS } from '#/shared/constants/authConstants.js'
 
 const bodySchema = z.object({
   email: z.string(),
@@ -19,9 +20,9 @@ const bodySchema = z.object({
 
 export function registerRoute(
   registerUserService: RegisterUserService,
-  passwordService: PasswordService,
-  jwtService: JwtService,
-  getUserProfileQuery: GetUserProfileQuery,
+  passwordService: IPasswordHasher,
+  jwtService: IJwtService,
+  getUserProfileQuery: IGetUserProfileQuery,
 ) {
   return function (fastify: FastifyInstance): void {
     fastify.post('/auth/register', async (request, reply) => {
@@ -56,7 +57,7 @@ export function registerRoute(
         secure: process.env['NODE_ENV'] === 'production',
         sameSite: 'strict',
         path: '/auth',
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
       })
 
       const user = await getUserProfileQuery.execute(id)

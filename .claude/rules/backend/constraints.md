@@ -14,6 +14,9 @@
 | Transactions only in Application Services                | `prisma.$transaction()` called from a route handler       |
 | Public API never exposes Domain objects or Prisma models | Returning an Aggregate or Prisma type from a route        |
 | No circular dependencies between modules or services     | Service A depends on Service B which depends on Service A |
+| All dependencies injected via constructor                | `new Repository()` instantiated inside a Service          |
+
+See `architecture.md` for full DI and cross-module patterns.
 
 ## 2. Database
 
@@ -27,20 +30,21 @@
 
 ## 3. Real-Time
 
-| Rule                                                  | Violation                                              |
-| ----------------------------------------------------- | ------------------------------------------------------ |
-| Socket.io events emitted only from Presentation layer | Calling `io.emit()` from inside an Application Service |
-| All Socket payloads validated with Zod before use     | Passing raw `socket.on` payload directly to a Command  |
-| Transient UI state never persisted to PostgreSQL      | Saving a typing indicator to the database              |
+| Rule                                                         | Violation                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------ |
+| Socket.IO events emitted only from Presentation layer        | Calling `io.emit()` from inside an Application Service |
+| All Socket payloads validated with Zod before use            | Passing raw `socket.on` payload directly to a Command  |
+| Requester identity sourced from `socket.data`, never payload | Using `payload.playerId` as the authoritative identity |
+| Transient UI state never persisted to PostgreSQL             | Saving a typing indicator to the database              |
 
 ## 4. Code Quality
 
-| Rule                                                  | Violation                                                  |
-| ----------------------------------------------------- | ---------------------------------------------------------- |
-| No `any` — use `unknown` + type guards                | `function handle(payload: any)`                            |
-| All dependencies injected via constructor             | `const repo = new UserPrismaRepository()` inside a Service |
-| No magic values — all constants are named             | `if (code.length !== 6)` without a named constant          |
-| `"strict": true` in `tsconfig.json`, never overridden | `// @ts-ignore` or per-file strict disable                 |
+| Rule                                  | Violation                                               |
+| ------------------------------------- | ------------------------------------------------------- |
+| No magic values — all constants named | `if (code.length !== 6)` without a named constant       |
+| All interfaces prefixed with `I`      | `interface GameRepository` instead of `IGameRepository` |
+
+See `typescript.md` for full TypeScript constraints (`no any`, `strict: true`, type guards, etc.).
 
 ## 5. Security
 

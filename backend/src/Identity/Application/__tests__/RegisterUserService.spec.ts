@@ -10,7 +10,7 @@ import { UserNickVo } from '#/Identity/Domain/ValueObjects/UserNickVo.js'
 import { UserPasswordHashVo } from '#/Identity/Domain/ValueObjects/UserPasswordHashVo.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import { ConflictError } from '#/shared/errors/ConflictError.js'
-import type { UserRepository } from '#/Identity/Domain/UserRepository.js'
+import type { IUserRepository } from '#/Identity/Domain/UserRepository.js'
 
 const makeExistingUser = (): UserAggregate =>
   UserAggregate.restore(
@@ -22,7 +22,7 @@ const makeExistingUser = (): UserAggregate =>
   )
 
 describe('RegisterUserService', () => {
-  let repository: UserRepository
+  let repository: IUserRepository
   let service: RegisterUserService
 
   beforeEach(() => {

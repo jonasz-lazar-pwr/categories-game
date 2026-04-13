@@ -1,10 +1,10 @@
 // === src/Identity/Infrastructure/Prisma/GetUserProfilePrismaQuery.ts ===
 
 import { GetUserProfileDto } from '#/Identity/Application/ReadDto/GetUserProfileDto.js'
-import type { GetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import type { IGetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
 import type { PrismaClient } from '#generated/prisma/client.js'
 
-export class GetUserProfilePrismaQuery implements GetUserProfileQuery {
+export class GetUserProfilePrismaQuery implements IGetUserProfileQuery {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async execute(userId: string): Promise<GetUserProfileDto | null> {

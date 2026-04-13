@@ -5,10 +5,10 @@ import { UserIdVo } from '#/Identity/Domain/ValueObjects/UserIdVo.js'
 import { UserEmailVo } from '#/Identity/Domain/ValueObjects/UserEmailVo.js'
 import { UserNickVo } from '#/Identity/Domain/ValueObjects/UserNickVo.js'
 import { UserPasswordHashVo } from '#/Identity/Domain/ValueObjects/UserPasswordHashVo.js'
-import type { UserRepository } from '#/Identity/Domain/UserRepository.js'
+import type { IUserRepository } from '#/Identity/Domain/UserRepository.js'
 import type { PrismaClient } from '#generated/prisma/client.js'
 
-export class UserPrismaRepository implements UserRepository {
+export class UserPrismaRepository implements IUserRepository {
   public constructor(private readonly prisma: PrismaClient) {}
 
   public async findById(id: UserIdVo): Promise<UserAggregate | null> {

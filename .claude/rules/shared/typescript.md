@@ -14,25 +14,25 @@
 | No type assertions (`as`) without a preceding type guard          | `const user = data as User`                |
 | `readonly` on all properties that don't change after construction | Mutable properties by default              |
 
-## 2. Type vs Interface
+## 2. Type vs Interface vs Class
 
-| Use case                                                  | Keyword                            |
-| --------------------------------------------------------- | ---------------------------------- |
-| External data shapes (API payloads, Socket events, props) | `interface`                        |
-| Unions and computed types                                 | `type`                             |
-| Domain Value Objects and DTOs                             | `class` with `readonly` properties |
+| Use case                                                    | Keyword                            |
+| ----------------------------------------------------------- | ---------------------------------- |
+| Port/contract definitions (repositories, facades, services) | `interface` with `I` prefix        |
+| External data shapes (API payloads, Socket events, props)   | `interface`                        |
+| Unions and computed types                                   | `type`                             |
+| Domain Value Objects and DTOs                               | `class` with `readonly` properties |
 
 ```ts
 // Correct
-interface SubmitAnswerPayload {
-  readonly category: string
-  readonly value: string
-}
-
-type GameStatus = 'waiting' | 'active' | 'finished'
+interface IGameRepository { ... }           // port — I prefix
+interface SubmitAnswerPayload { ... }        // external shape — no I prefix
+type GameStatus = 'lobby' | 'active' | 'finished' | 'cancelled'
+class GameIdVo { constructor(public readonly value: string) {} }
 
 // Wrong
-type SubmitAnswerPayload = { category: string; value: string }
+type SubmitAnswerPayload = { category: string; value: string }  // use interface
+interface GameRepository { ... }            // missing I prefix on port
 ```
 
 ## 3. Unknown Input
@@ -59,7 +59,7 @@ Always use path aliases instead of relative paths for imports across module boun
 ```ts
 // Correct
 import { GameAggregate } from '#/Game/Domain/GameAggregate.js'
-import type { CreateGameCommand } from '#/Game/Application/Command/CreateGameCommand.js'
+import type { CreateGameCommand } from '#/Game/Application/CommandDto/CreateGameCommand.js'
 
 // Wrong
 import { GameAggregate } from '../../../Game/Domain/GameAggregate.js'

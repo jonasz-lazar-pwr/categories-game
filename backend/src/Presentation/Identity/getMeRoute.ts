@@ -1,11 +1,11 @@
 // === src/Presentation/Identity/getMeRoute.ts ===
 
 import type { FastifyInstance } from 'fastify'
-import type { GetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IGetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 import { createAuthMiddleware } from '#/Presentation/Identity/authMiddleware.js'
 
-export function getMeRoute(jwtService: JwtService, getUserProfileQuery: GetUserProfileQuery) {
+export function getMeRoute(jwtService: IJwtService, getUserProfileQuery: IGetUserProfileQuery) {
   return function (fastify: FastifyInstance): void {
     fastify.get(
       '/auth/me',

@@ -5,18 +5,21 @@ import Fastify from 'fastify'
 import { getMeRoute } from '#/Presentation/Identity/getMeRoute.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import { GetUserProfileDto } from '#/Identity/Application/ReadDto/GetUserProfileDto.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
-import type { GetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
+import type { IGetUserProfileQuery } from '#/Identity/Application/GetUserProfileQuery.js'
 import '#/shared/types/FastifyTypes.js'
 
-const makeServices = (): { jwtService: JwtService; getUserProfileQuery: GetUserProfileQuery } => ({
+const makeServices = (): {
+  jwtService: IJwtService
+  getUserProfileQuery: IGetUserProfileQuery
+} => ({
   jwtService: {
     verifyAccess: vi.fn(),
     signAccess: vi.fn(),
     signRefresh: vi.fn(),
     verifyRefresh: vi.fn(),
-  } as unknown as JwtService,
-  getUserProfileQuery: { execute: vi.fn() } as unknown as GetUserProfileQuery,
+  } as unknown as IJwtService,
+  getUserProfileQuery: { execute: vi.fn() } as unknown as IGetUserProfileQuery,
 })
 
 describe('getMeRoute', () => {

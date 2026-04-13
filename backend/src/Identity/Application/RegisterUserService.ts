@@ -6,11 +6,11 @@ import { UserEmailVo } from '#/Identity/Domain/ValueObjects/UserEmailVo.js'
 import { UserNickVo } from '#/Identity/Domain/ValueObjects/UserNickVo.js'
 import { UserPasswordHashVo } from '#/Identity/Domain/ValueObjects/UserPasswordHashVo.js'
 import { ConflictError } from '#/shared/errors/ConflictError.js'
-import type { UserRepository } from '#/Identity/Domain/UserRepository.js'
+import type { IUserRepository } from '#/Identity/Domain/UserRepository.js'
 import type { RegisterUserCommand } from '#/Identity/Application/CommandDto/RegisterUserCommand.js'
 
 export class RegisterUserService {
-  public constructor(private readonly userRepository: UserRepository) {}
+  public constructor(private readonly userRepository: IUserRepository) {}
 
   public async execute(command: RegisterUserCommand): Promise<void> {
     const email = new UserEmailVo(command.email)

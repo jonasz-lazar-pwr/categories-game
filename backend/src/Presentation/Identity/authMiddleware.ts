@@ -1,10 +1,10 @@
 // === src/Presentation/Identity/authMiddleware.ts ===
 
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 
-export function createAuthMiddleware(jwtService: JwtService) {
+export function createAuthMiddleware(jwtService: IJwtService) {
   return async function authMiddleware(
     request: FastifyRequest,
     reply: FastifyReply,

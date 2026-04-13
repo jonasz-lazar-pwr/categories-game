@@ -2,6 +2,6 @@
 
 import type { GetUserProfileDto } from '#/Identity/Application/ReadDto/GetUserProfileDto.js'
 
-export interface GetUserProfileQuery {
+export interface IGetUserProfileQuery {
   execute(userId: string): Promise<GetUserProfileDto | null>
 }

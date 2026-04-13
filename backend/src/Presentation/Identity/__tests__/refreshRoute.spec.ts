@@ -5,24 +5,24 @@ import Fastify from 'fastify'
 import cookie from '@fastify/cookie'
 import { refreshRoute } from '#/Presentation/Identity/refreshRoute.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 
-const makeJwtService = (): JwtService =>
+const makeJwtService = (): IJwtService =>
   ({
     signAccess: vi.fn().mockReturnValue('new-access-token'),
     signRefresh: vi.fn(),
     verifyAccess: vi.fn(),
     verifyRefresh: vi.fn(),
-  }) as unknown as JwtService
+  }) as unknown as IJwtService
 
 describe('refreshRoute', () => {
-  let jwtService: JwtService
+  let jwtService: IJwtService
 
   beforeEach(() => {
     jwtService = makeJwtService()
   })
 
-  const buildApp = (j: JwtService): ReturnType<typeof Fastify> => {
+  const buildApp = (j: IJwtService): ReturnType<typeof Fastify> => {
     const app = Fastify()
     void app.register(cookie)
     app.register(refreshRoute(j))

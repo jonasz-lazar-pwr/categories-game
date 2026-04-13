@@ -2,17 +2,17 @@
 
 import { UserEmailVo } from '#/Identity/Domain/ValueObjects/UserEmailVo.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
-import type { UserRepository } from '#/Identity/Domain/UserRepository.js'
+import type { IUserRepository } from '#/Identity/Domain/UserRepository.js'
 import type { LoginUserCommand } from '#/Identity/Application/CommandDto/LoginUserCommand.js'
 
-export interface PasswordVerifier {
+export interface IPasswordVerifier {
   verify(plain: string, hash: string): Promise<boolean>
 }
 
 export class LoginUserService {
   public constructor(
-    private readonly userRepository: UserRepository,
-    private readonly passwordVerifier: PasswordVerifier,
+    private readonly userRepository: IUserRepository,
+    private readonly passwordVerifier: IPasswordVerifier,
   ) {}
 
   public async execute(command: LoginUserCommand): Promise<{ userId: string }> {

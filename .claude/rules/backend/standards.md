@@ -84,15 +84,32 @@ execute(): void { ... }
 | Value Object              | `*Vo`               | `OrderIdVo`, `UserEmailVo` |
 | Command DTO               | `*Command`          | `CreateOrderCommand`       |
 | Command Service           | `*Service`          | `CreateOrderService`       |
-| Query interface           | `*Query`            | `GetOrderQuery`            |
+| Query interface           | `I*Query`           | `IGetOrderQuery`           |
 | Query implementation      | `*PrismaQuery`      | `GetOrderPrismaQuery`      |
-| Repository interface      | `*Repository`       | `OrderRepository`          |
+| Repository interface      | `I*Repository`      | `IOrderRepository`         |
 | Repository implementation | `*PrismaRepository` | `OrderPrismaRepository`    |
+| Facade interface          | `I*Facade`          | `IOrderFacade`             |
+| Facade implementation     | `*FacadeImpl`       | `OrderFacadeImpl`          |
+| Service interface         | `I*Service`         | `ICreateOrderService`      |
 | Read DTO                  | `*Dto`              | `OrderDetailDto`           |
 | View Object               | `*View`             | `OrderSummaryView`         |
-| Facade                    | `*Facade`           | `OrderFacade`              |
 | HTTP route handler        | `*Route`            | `createOrderRoute`         |
 | Socket event handler      | `*Handler`          | `submitAnswerHandler`      |
+
+**Interface naming rule:** All TypeScript interfaces are prefixed with `I`. This applies to repositories, facades, service contracts, query interfaces, and any other port/contract type. Concrete classes implementing an interface never carry the `I` prefix.
+
+```ts
+// Correct
+export interface IGameRepository { ... }
+export class GamePrismaRepository implements IGameRepository { ... }
+
+export interface IGameFacade { ... }
+export class GameFacadeImpl implements IGameFacade { ... }
+
+// Wrong
+export interface GameRepository { ... }
+export class GameFacadeImpl implements GameFacade { ... }
+```
 
 ## 6. Module Structure
 
@@ -105,10 +122,11 @@ Module/
 │   ├── ReadDto/          ← *Dto
 │   ├── View/             ← *View
 │   ├── *Service.ts       ← directly in Application/
-│   └── *Query.ts         ← directly in Application/
+│   └── *Query.ts         ← directly in Application/ (interface only, I* prefix)
 ├── Domain/
 │   ├── *Aggregate.ts     ← directly in Domain/
-│   ├── *Repository.ts    ← directly in Domain/
+│   ├── *Repository.ts    ← directly in Domain/ (interface only, I* prefix)
+│   ├── *Facade.ts        ← directly in Domain/ (interface only, I* prefix)
 │   └── ValueObjects/     ← *Vo
 └── Infrastructure/
     ├── Prisma/           ← *PrismaRepository, *PrismaQuery
@@ -128,6 +146,18 @@ Presentation/
 └── Scoring/
 ```
 
+Bootstrap is split into per-domain modules:
+
+```
+bootstrap/
+├── http.ts       ← Fastify instance + plugin registration
+├── identity.ts   ← Identity domain wiring + route registration
+├── game.ts       ← Game domain wiring + route registration
+├── round.ts      ← placeholder
+├── scoring.ts    ← placeholder
+└── socket.ts     ← Socket.IO server + handler registration
+```
+
 Tests for Domain and Application layers are co-located with their source in `__tests__/` folders.
 
 ## 7. Error Classes
@@ -138,5 +168,6 @@ Two base classes in `src/shared/errors/` — no other error classes at applicati
 | ---------------------- | ---------------------------------------------- |
 | `InvalidArgumentError` | Invalid input, duplicate, constraint violation |
 | `NotFoundError`        | Aggregate or record not found                  |
+| `ConflictError`        | Nick conflict, code collision                  |
 
 Domain throws on invalid state. Application Services throw on constraint violations requiring a repository check. Presentation catches and maps to HTTP status codes or Socket error events.

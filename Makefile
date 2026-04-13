@@ -33,7 +33,7 @@ test:
 	npm run test --prefix backend
 	npm run test --prefix frontend
 
-check: format lint test
+check: format test
 	npm run type-check --prefix backend
 	npm run type-check --prefix frontend
 

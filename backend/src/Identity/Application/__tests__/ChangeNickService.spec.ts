@@ -10,7 +10,7 @@ import { UserNickVo } from '#/Identity/Domain/ValueObjects/UserNickVo.js'
 import { UserPasswordHashVo } from '#/Identity/Domain/ValueObjects/UserPasswordHashVo.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import { NotFoundError } from '#/shared/errors/NotFoundError.js'
-import type { UserRepository } from '#/Identity/Domain/UserRepository.js'
+import type { IUserRepository } from '#/Identity/Domain/UserRepository.js'
 
 const USER_ID = '550e8400-e29b-41d4-a716-446655440000'
 
@@ -24,7 +24,7 @@ const makeUser = (): UserAggregate =>
   )
 
 describe('ChangeNickService', () => {
-  let repository: UserRepository
+  let repository: IUserRepository
   let service: ChangeNickService
 
   beforeEach(() => {

@@ -4,19 +4,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Fastify from 'fastify'
 import { createAuthMiddleware } from '#/Presentation/Identity/authMiddleware.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 import '#/shared/types/FastifyTypes.js'
 
-const makeJwtService = (): JwtService =>
+const makeJwtService = (): IJwtService =>
   ({
     verifyAccess: vi.fn(),
     signAccess: vi.fn(),
     signRefresh: vi.fn(),
     verifyRefresh: vi.fn(),
-  }) as unknown as JwtService
+  }) as unknown as IJwtService
 
 describe('authMiddleware', () => {
-  let jwtService: JwtService
+  let jwtService: IJwtService
 
   beforeEach(() => {
     jwtService = makeJwtService()

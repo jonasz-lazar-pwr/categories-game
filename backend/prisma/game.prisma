@@ -26,8 +26,9 @@ model Game {
   uniquePoints             Int
   duplicatePoints          Int
   closingTimeSeconds       Int
-  verificationTimeoutSeconds Int
-  createdAt                DateTime       @default(now())
+  verificationTimeoutSeconds   Int
+  waitingForHostTimeoutSeconds Int
+  createdAt                    DateTime       @default(now())
   updatedAt                DateTime       @updatedAt
 
   host       User             @relation(fields: [hostId], references: [id])

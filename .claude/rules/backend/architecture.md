@@ -53,7 +53,8 @@ export class OrderAggregate {
   ) {}
 
   public static create(id: OrderIdVo, code: string): OrderAggregate {
-    if (code.length !== 6) throw new InvalidArgumentError('Code must be 6 characters.')
+    if (code.length !== ORDER_CODE_LENGTH)
+      throw new InvalidArgumentError('Code must be 6 characters.')
     return new OrderAggregate(id, OrderStatus.Pending)
   }
 
@@ -91,7 +92,7 @@ Orchestrates the write flow — loads aggregate, calls aggregate method, persist
 
 ```ts
 export class CreateOrderService {
-  public constructor(private readonly repository: OrderRepository) {}
+  public constructor(private readonly repository: IOrderRepository) {}
 
   public async execute(command: CreateOrderCommand): Promise<string> {
     const existing = await this.repository.findByCode(command.code)
@@ -117,14 +118,15 @@ fastify.post<{ Body: ExampleBody }>('/examples', { schema }, async (req, reply) 
 ```
 
 ```ts
-// Socket
+// Socket — requester identity always sourced from socket.data, never from client payload
 socket.on('example_event', async (payload: unknown) => {
   const parsed = examplePayloadSchema.safeParse(payload)
   if (!parsed.success) {
     socket.emit('error', { message: 'Invalid payload' })
     return
   }
-  await exampleService.execute(new ExampleCommand(socket.data.userId, parsed.data.value))
+  const requesterId = socket.data.playerId as string
+  await exampleService.execute(new ExampleCommand(requesterId, parsed.data.value))
 })
 ```
 
@@ -132,17 +134,17 @@ Socket.IO events emitted only from Presentation — never from Application or Do
 
 ## 7. Dependency Injection
 
-No IoC container. All dependencies wired in `src/bootstrap.ts`. Services, Repositories, and Handlers never instantiate their own dependencies.
+No IoC container. All dependencies wired in `src/bootstrap.ts` via per-domain modules in `src/bootstrap/`. Services, Repositories, and Handlers never instantiate their own dependencies.
 
 ```ts
-// Correct
-const repository = new ExamplePrismaRepository(prisma)
-const service = new CreateExampleService(repository)
-app.register(createExampleRoute(service))
+// Correct — bootstrap/game.ts
+const repository = new GamePrismaRepository(prisma)
+const service = new CreateGameService(repository)
+app.register(createGameRoute(jwtService, service))
 
-// Wrong
-export class CreateExampleService {
-  private readonly repository = new ExamplePrismaRepository(prisma)
+// Wrong — inside a Service
+export class CreateGameService {
+  private readonly repository = new GamePrismaRepository(prisma)
 }
 ```
 
@@ -158,8 +160,8 @@ export class CreateExampleService {
 // Correct
 export class CreateOrderService {
   public constructor(
-    private readonly orderRepository: OrderRepository,
-    private readonly customerFacade: CustomerFacade,
+    private readonly orderRepository: IOrderRepository,
+    private readonly customerFacade: ICustomerFacade,
   ) {}
 }
 

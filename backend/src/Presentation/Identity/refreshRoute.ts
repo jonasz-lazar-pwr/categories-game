@@ -2,9 +2,9 @@
 
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import type { FastifyInstance } from 'fastify'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 
-export function refreshRoute(jwtService: JwtService) {
+export function refreshRoute(jwtService: IJwtService) {
   return function (fastify: FastifyInstance): void {
     fastify.post('/auth/refresh', async (request, reply) => {
       const token = request.cookies['refreshToken']

@@ -2,6 +2,7 @@
 
 import jwt from 'jsonwebtoken'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 
 function isTokenPayload(value: unknown): value is { sub: string } {
   return (
@@ -12,7 +13,7 @@ function isTokenPayload(value: unknown): value is { sub: string } {
   )
 }
 
-export class JwtService {
+export class JwtService implements IJwtService {
   private readonly accessSecret: string
   private readonly refreshSecret: string
 

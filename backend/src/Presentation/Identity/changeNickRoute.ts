@@ -7,13 +7,13 @@ import { ChangeNickCommand } from '#/Identity/Application/CommandDto/ChangeNickC
 import { createAuthMiddleware } from '#/Presentation/Identity/authMiddleware.js'
 import type { FastifyInstance } from 'fastify'
 import type { ChangeNickService } from '#/Identity/Application/ChangeNickService.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 
 const bodySchema = z.object({
   nick: z.string(),
 })
 
-export function changeNickRoute(jwtService: JwtService, changeNickService: ChangeNickService) {
+export function changeNickRoute(jwtService: IJwtService, changeNickService: ChangeNickService) {
   return function (fastify: FastifyInstance): void {
     fastify.patch(
       '/auth/me/nick',

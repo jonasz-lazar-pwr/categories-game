@@ -5,17 +5,17 @@ import Fastify from 'fastify'
 import { changeNickRoute } from '#/Presentation/Identity/changeNickRoute.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import { NotFoundError } from '#/shared/errors/NotFoundError.js'
-import type { JwtService } from '#/Identity/Infrastructure/JwtService.js'
+import type { IJwtService } from '#/Identity/Domain/IJwtService.js'
 import type { ChangeNickService } from '#/Identity/Application/ChangeNickService.js'
 import '#/shared/types/FastifyTypes.js'
 
-const makeServices = (): { jwtService: JwtService; changeNickService: ChangeNickService } => ({
+const makeServices = (): { jwtService: IJwtService; changeNickService: ChangeNickService } => ({
   jwtService: {
     verifyAccess: vi.fn().mockReturnValue('user-id'),
     signAccess: vi.fn(),
     signRefresh: vi.fn(),
     verifyRefresh: vi.fn(),
-  } as unknown as JwtService,
+  } as unknown as IJwtService,
   changeNickService: { execute: vi.fn() } as unknown as ChangeNickService,
 })
 

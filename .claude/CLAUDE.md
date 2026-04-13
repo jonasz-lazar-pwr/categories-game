@@ -30,18 +30,21 @@ src/
 ├── Round/          # Round flow, letter drawing, answer collection, timer
 ├── Scoring/        # Verification, voting, AI integration, scoring
 ├── Presentation/   # All HTTP routes and Socket handlers — split by domain internally
+├── bootstrap/      # Per-domain wiring modules (identity, game, round, scoring, socket, http)
 └── shared/
-    ├── errors/     # InvalidArgumentError, NotFoundError
-    └── types/
+    ├── errors/     # InvalidArgumentError, NotFoundError, ConflictError
+    ├── types/      # FastifyTypes
+    └── ValueObjects/ # PlayerIdVo — shared across Game, Round, Scoring domains
 ```
 
 ### Key Facts
 
 - Path alias `#/` maps to `src/` — e.g. `import { GameAggregate } from '#/Game/Domain/GameAggregate.js'`
 - Imports require `.js` extension — required by `moduleResolution: nodenext`
-- All dependencies wired manually in `src/bootstrap.ts` — no IoC container
+- Dependencies wired in `src/bootstrap.ts` (composition root) via per-domain modules in `src/bootstrap/`— no IoC container
 - Prisma schema split across `backend/prisma/*.prisma` files
 - `backend/generated/` — never committed, run `make generate` after cloning or changing schema
+- All interfaces prefixed with `I` — e.g. `IGameRepository`, `IGameFacade`, `IJwtService`
 
 ---
 
