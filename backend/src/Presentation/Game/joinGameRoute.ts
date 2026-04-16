@@ -12,7 +12,7 @@ import type { JoinGameService } from '#/Game/Application/JoinGameService.js'
 
 const bodySchema = z.object({
   gameCode: z.string(),
-  nick: z.string().min(1),
+  nick: z.string().min(1).max(32).optional(),
 })
 
 export function joinGameRoute(jwtService: IJwtService, joinGameService: JoinGameService) {

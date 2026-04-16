@@ -5,6 +5,6 @@ export class JoinGameCommand {
     public readonly newPlayerId: string,
     public readonly gameCode: string,
     public readonly userId: string | null,
-    public readonly nick: string,
+    public readonly nick: string | undefined,
   ) {}
 }

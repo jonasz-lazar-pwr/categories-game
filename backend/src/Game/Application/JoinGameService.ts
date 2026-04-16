@@ -5,11 +5,12 @@ import { GameStatus } from '#/Game/Domain/ValueObjects/GameStatusVo.js'
 import { PlayerIdVo } from '#/shared/ValueObjects/PlayerIdVo.js'
 import { UserIdVo } from '#/Identity/Domain/ValueObjects/UserIdVo.js'
 import { NotFoundError } from '#/shared/errors/NotFoundError.js'
+import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import type { IGameRepository } from '#/Game/Domain/GameRepository.js'
 import type { JoinGameCommand } from '#/Game/Application/CommandDto/JoinGameCommand.js'
 import type { GameAggregate } from '#/Game/Domain/GameAggregate.js'
 
-export interface JoinGameResult {
+export interface IJoinGameResult {
   gameId: string
   playerId: string
 }
@@ -17,7 +18,7 @@ export interface JoinGameResult {
 export class JoinGameService {
   public constructor(private readonly gameRepository: IGameRepository) {}
 
-  public async execute(command: JoinGameCommand): Promise<JoinGameResult> {
+  public async execute(command: JoinGameCommand): Promise<IJoinGameResult> {
     const code = new GameCodeVo(command.gameCode)
     const game = await this.gameRepository.findByCode(code)
     if (game === null) throw new NotFoundError('Game not found.')
@@ -34,7 +35,10 @@ export class JoinGameService {
   private async handleLobbyJoin(
     game: GameAggregate,
     command: JoinGameCommand,
-  ): Promise<JoinGameResult> {
+  ): Promise<IJoinGameResult> {
+    if (command.nick === undefined) {
+      throw new InvalidArgumentError('nick is required when joining a lobby.')
+    }
     const userId = command.userId !== null ? new UserIdVo(command.userId) : null
     game.addPlayer(new PlayerIdVo(command.newPlayerId), userId, command.nick)
     await this.gameRepository.save(game)
@@ -44,7 +48,7 @@ export class JoinGameService {
   private async handleReconnect(
     game: GameAggregate,
     command: JoinGameCommand,
-  ): Promise<JoinGameResult> {
+  ): Promise<IJoinGameResult> {
     const existingPlayer = this.findReconnectingPlayer(game, command)
     if (existingPlayer === null) throw new NotFoundError('Player not found in this game.')
 
@@ -62,7 +66,8 @@ export class JoinGameService {
       return player !== undefined ? { playerId: player.playerId } : null
     }
 
-    const player = game.players.find((p) => p.nick.toLowerCase() === command.nick.toLowerCase())
+    if (command.nick === undefined) return null
+    const player = game.players.find((p) => p.nick.toLowerCase() === command.nick!.toLowerCase())
     return player !== undefined ? { playerId: player.playerId } : null
   }
 }

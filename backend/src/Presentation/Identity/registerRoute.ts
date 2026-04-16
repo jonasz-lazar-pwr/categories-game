@@ -25,47 +25,51 @@ export function registerRoute(
   getUserProfileQuery: IGetUserProfileQuery,
 ) {
   return function (fastify: FastifyInstance): void {
-    fastify.post('/auth/register', async (request, reply) => {
-      const parsed = bodySchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply
-          .status(400)
-          .send({ error: parsed.error.issues[0]?.message ?? 'Invalid input.' })
-      }
-
-      const { email, nick, password } = parsed.data
-      const passwordHash = await passwordService.hash(password)
-      const id = randomUUID()
-
-      try {
-        await registerUserService.execute(new RegisterUserCommand(id, email, nick, passwordHash))
-      } catch (error) {
-        if (error instanceof ConflictError) {
-          return reply.status(409).send({ error: error.message })
+    fastify.post(
+      '/auth/register',
+      { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
+      async (request, reply) => {
+        const parsed = bodySchema.safeParse(request.body)
+        if (!parsed.success) {
+          return reply
+            .status(400)
+            .send({ error: parsed.error.issues[0]?.message ?? 'Invalid input.' })
         }
-        if (error instanceof InvalidArgumentError) {
-          return reply.status(400).send({ error: error.message })
+
+        const { email, nick, password } = parsed.data
+        const passwordHash = await passwordService.hash(password)
+        const id = randomUUID()
+
+        try {
+          await registerUserService.execute(new RegisterUserCommand(id, email, nick, passwordHash))
+        } catch (error) {
+          if (error instanceof ConflictError) {
+            return reply.status(409).send({ error: error.message })
+          }
+          if (error instanceof InvalidArgumentError) {
+            return reply.status(400).send({ error: error.message })
+          }
+          throw error
         }
-        throw error
-      }
 
-      const accessToken = jwtService.signAccess(id)
-      const refreshToken = jwtService.signRefresh(id)
+        const accessToken = jwtService.signAccess(id)
+        const refreshToken = jwtService.signRefresh(id)
 
-      void reply.setCookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production',
-        sameSite: 'strict',
-        path: '/auth',
-        maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
-      })
+        void reply.setCookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: process.env['NODE_ENV'] === 'production',
+          sameSite: 'strict',
+          path: '/auth',
+          maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
+        })
 
-      const user = await getUserProfileQuery.execute(id)
-      if (user === null) {
-        return reply.status(500).send({ error: 'Internal server error.' })
-      }
+        const user = await getUserProfileQuery.execute(id)
+        if (user === null) {
+          return reply.status(500).send({ error: 'Internal server error.' })
+        }
 
-      return reply.status(201).send({ accessToken, user })
-    })
+        return reply.status(201).send({ accessToken, user })
+      },
+    )
   }
 }

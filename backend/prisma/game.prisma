@@ -51,7 +51,7 @@ model Player {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  game          Game           @relation(fields: [gameId], references: [id])
+  game          Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
   playerAnswers PlayerAnswers[]
   votes         Vote[]
 
@@ -79,7 +79,7 @@ model GameCategory {
   name        String
   description String
 
-  game     Game     @relation(fields: [gameId], references: [id])
+  game     Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id])
 
   answerVerifications AnswerVerification[]

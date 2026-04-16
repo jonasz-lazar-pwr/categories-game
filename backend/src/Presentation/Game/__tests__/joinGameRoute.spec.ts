@@ -61,7 +61,7 @@ describe('joinGameRoute', () => {
     const response = await app.inject({
       method: 'POST',
       url: '/games/join',
-      payload: { gameCode: 'ABC123' },
+      payload: { nick: 'Alice' }, // missing required gameCode
     })
     expect(response.statusCode).toBe(400)
   })

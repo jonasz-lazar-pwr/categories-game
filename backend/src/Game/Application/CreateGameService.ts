@@ -16,7 +16,7 @@ import type { IGameRepository } from '#/Game/Domain/GameRepository.js'
 import type { ICategoryRepository } from '#/Game/Domain/CategoryRepository.js'
 import type { CreateGameCommand } from '#/Game/Application/CommandDto/CreateGameCommand.js'
 
-export interface CreateGameResult {
+export interface ICreateGameResult {
   gameId: string
   gameCode: string
   playerId: string
@@ -28,7 +28,7 @@ export class CreateGameService {
     private readonly categoryRepository: ICategoryRepository,
   ) {}
 
-  public async execute(command: CreateGameCommand): Promise<CreateGameResult> {
+  public async execute(command: CreateGameCommand): Promise<ICreateGameResult> {
     const alphabetPreset = this.resolveAlphabetPreset(command.alphabetPreset)
 
     const categoryConfigs = await this.resolveCategoryConfigs(command.categoryIds)

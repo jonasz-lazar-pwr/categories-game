@@ -20,44 +20,48 @@ export function loginRoute(
   getUserProfileQuery: IGetUserProfileQuery,
 ) {
   return function (fastify: FastifyInstance): void {
-    fastify.post('/auth/login', async (request, reply) => {
-      const parsed = bodySchema.safeParse(request.body)
-      if (!parsed.success) {
-        return reply
-          .status(400)
-          .send({ error: parsed.error.issues[0]?.message ?? 'Invalid input.' })
-      }
-
-      let userId: string
-      try {
-        const result = await loginUserService.execute(
-          new LoginUserCommand(parsed.data.email, parsed.data.password),
-        )
-        userId = result.userId
-      } catch (error) {
-        if (error instanceof InvalidArgumentError) {
-          return reply.status(401).send({ error: error.message })
+    fastify.post(
+      '/auth/login',
+      { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } },
+      async (request, reply) => {
+        const parsed = bodySchema.safeParse(request.body)
+        if (!parsed.success) {
+          return reply
+            .status(400)
+            .send({ error: parsed.error.issues[0]?.message ?? 'Invalid input.' })
         }
-        throw error
-      }
 
-      const accessToken = jwtService.signAccess(userId)
-      const refreshToken = jwtService.signRefresh(userId)
+        let userId: string
+        try {
+          const result = await loginUserService.execute(
+            new LoginUserCommand(parsed.data.email, parsed.data.password),
+          )
+          userId = result.userId
+        } catch (error) {
+          if (error instanceof InvalidArgumentError) {
+            return reply.status(401).send({ error: error.message })
+          }
+          throw error
+        }
 
-      void reply.setCookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env['NODE_ENV'] === 'production',
-        sameSite: 'strict',
-        path: '/auth',
-        maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
-      })
+        const accessToken = jwtService.signAccess(userId)
+        const refreshToken = jwtService.signRefresh(userId)
 
-      const user = await getUserProfileQuery.execute(userId)
-      if (user === null) {
-        return reply.status(500).send({ error: 'Internal server error.' })
-      }
+        void reply.setCookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: process.env['NODE_ENV'] === 'production',
+          sameSite: 'strict',
+          path: '/auth',
+          maxAge: REFRESH_TOKEN_MAX_AGE_SECONDS,
+        })
 
-      return reply.status(200).send({ accessToken, user })
-    })
+        const user = await getUserProfileQuery.execute(userId)
+        if (user === null) {
+          return reply.status(500).send({ error: 'Internal server error.' })
+        }
+
+        return reply.status(200).send({ accessToken, user })
+      },
+    )
   }
 }

@@ -20,7 +20,7 @@ const bodySchema = z.object({
   closingTimeSeconds: z.number().int().min(1),
   verificationTimeoutSeconds: z.number().int().min(1),
   waitingForHostTimeoutSeconds: z.number().int().min(1),
-  hostNick: z.string().min(1),
+  hostNick: z.string().min(1).max(32),
 })
 
 export function createGameRoute(jwtService: IJwtService, createGameService: CreateGameService) {

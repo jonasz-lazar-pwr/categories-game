@@ -45,6 +45,7 @@
 - Host clicks **Start Game** when ready — no confirmation required from players
 - The **Start Game** button is active when there is at least 1 player in the lobby (host alone can start in solo mode, e.g. for testing)
 - If the host disconnects in the lobby — see Section 7 (Host Disconnection)
+- Maximum **20 players** per game (including host)
 
 ---
 
@@ -83,7 +84,7 @@
 
 ```
 LOBBY
-  ↓ host clicks "Start Game" (min. 2 players including host)
+  ↓ host clicks "Start Game"
 ROUND_ANSWERING       ← letter drawn automatically, players fill in answers
   ↓ first player clicks "I'm done"
 ROUND_CLOSING         ← countdown (e.g. 15s) for remaining players
@@ -140,6 +141,7 @@ Special states:
 
 - Final result = weighted sum of player votes + AI vote (AI counts as one player)
 - Acceptance threshold: **≥ 50%** — ties pass
+- Empty answers are automatically rejected (0 pts) without voting
 
 ### STANDINGS
 
@@ -204,5 +206,4 @@ Special states:
 
 ## 9. Open Questions (to be resolved in the future)
 
-- Exact algorithm for weighting player votes vs. AI
 - Detailed statistics on the dashboard

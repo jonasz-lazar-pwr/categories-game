@@ -1,19 +1,36 @@
 // === src/Game/Domain/GameFacade.ts ===
 
 import type { GameIdVo } from '#/Game/Domain/ValueObjects/GameIdVo.js'
+import type { PlayerIdVo } from '#/shared/ValueObjects/PlayerIdVo.js'
 
-export interface GameCategoryDto {
+export interface IGameCategoryDto {
   categoryId: string
   name: string
   description: string
 }
 
-export interface GamePlayerDto {
+export interface IGamePlayerDto {
   playerId: string
   nick: string
+  score: number
+  isConnected: boolean
 }
 
-export interface GameScoringConfigDto {
+export interface IGameStateDto {
+  currentRoundNumber: number
+  roundCount: number
+  scoringConfig: {
+    uniqueOnlyPoints: number
+    uniquePoints: number
+    duplicatePoints: number
+    closingTimeSeconds: number
+    verificationTimeoutSeconds: number
+  }
+  categories: IGameCategoryDto[]
+  players: IGamePlayerDto[]
+}
+
+export interface IGameScoringConfigDto {
   uniqueOnlyPoints: number
   uniquePoints: number
   duplicatePoints: number
@@ -21,13 +38,18 @@ export interface GameScoringConfigDto {
   verificationTimeoutSeconds: number
 }
 
-export interface GameConfigurationDto {
+export interface IGameConfigurationDto {
+  roundNumber: number
   letter: string
-  categories: GameCategoryDto[]
-  players: GamePlayerDto[]
-  scoringConfig: GameScoringConfigDto
+  categories: IGameCategoryDto[]
+  players: IGamePlayerDto[]
+  scoringConfig: IGameScoringConfigDto
 }
 
 export interface IGameFacade {
-  startRound(gameId: GameIdVo): Promise<GameConfigurationDto>
+  startRound(gameId: GameIdVo): Promise<IGameConfigurationDto>
+  updatePlayerScore(gameId: GameIdVo, playerId: PlayerIdVo, points: number): Promise<void>
+  updatePlayerScores(gameId: GameIdVo, scores: Map<PlayerIdVo, number>): Promise<void>
+  finishGame(gameId: GameIdVo): Promise<void>
+  getGameState(gameId: GameIdVo): Promise<IGameStateDto>
 }

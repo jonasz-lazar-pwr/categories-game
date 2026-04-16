@@ -17,11 +17,12 @@ model Round {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  game          Game            @relation(fields: [gameId], references: [id])
+  game          Game            @relation(fields: [gameId], references: [id], onDelete: Cascade)
   playerAnswers PlayerAnswers[]
   verification  Verification?
 
   @@unique([gameId, roundNumber])
+  @@index([gameId, status])
   @@map("rounds")
 }
 
@@ -33,7 +34,7 @@ model PlayerAnswers {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  round   Round    @relation(fields: [roundId], references: [id])
+  round   Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
   player  Player   @relation(fields: [playerId], references: [id])
   answers Answer[]
 
@@ -47,7 +48,7 @@ model Answer {
   gameCategoryId  String
   value           String @default("")
 
-  playerAnswers PlayerAnswers @relation(fields: [playerAnswersId], references: [id])
+  playerAnswers PlayerAnswers @relation(fields: [playerAnswersId], references: [id], onDelete: Cascade)
 
   @@unique([playerAnswersId, gameCategoryId])
   @@map("answers")

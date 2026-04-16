@@ -166,13 +166,15 @@ Responsible for the flow of a single round — collecting answers and managing t
 - `static restore(...)`
 - `submitAnswers(playerId, answers)` — status must be `answering` or `closing`, player has not yet submitted
 - `startClosing(deadline)` — first player finished, sets `closingDeadline`, status → `closing`
-- `close()` — status → `finished`, blocks further answers; players who never submitted keep empty answers (0 pts)
+- `close()` — status → `finished`, blocks further answers; players who never submitted keep empty answers (included in Scoring with 0 pts, shown in VERIFICATION)
+- `hasAllSubmitted()` — returns true when every player has submitted; used by `SubmitAnswersService` to trigger closing
 - `getSubmittedAnswers()` — returns all answers to pass to Scoring; unsubmitted players are included with empty answers
 
 **Repository:** `IRoundRepository`
 
 - `findById(id: RoundIdVo)`
 - `findByGameId(gameId: GameIdVo)`
+- `findClosingWithDeadlineAfter(now: Date)` — used on startup to recover timers for rounds still in `closing` state
 - `save(round: RoundAggregate)`
 
 ---
@@ -228,7 +230,7 @@ The Scoring flow has two distinct sub-phases:
 
 **Methods:**
 
-- `static create(id, roundId, gameId, answers, categories, timeoutSeconds)` — status starts as `ai_processing`; empty answers are included but flagged; `timeoutSeconds` passed from `ScoringConfig` via Facade
+- `static create(id, roundId, gameId, answers)` — status starts as `ai_processing`; empty answers are included but flagged; cursor starts as null until first AI result arrives
 - `static restore(...)`
 - `setAiResult(playerId, categoryId, score, reasoning)` — sets score + reasoning; when all non-empty answers have AI results, status → `in_progress`
 - `castVote(voterId, playerId, categoryId, accepted)` — only allowed in `in_progress`; player cannot vote on their own answer; disconnected player's vote is simply never cast
@@ -242,6 +244,7 @@ The Scoring flow has two distinct sub-phases:
 - `findById(id: VerificationIdVo)`
 - `findByRoundId(roundId: RoundIdVo)`
 - `save(verification: VerificationAggregate)`
+- `saveAiResult(itemId, aiScore, aiReasoning)` — partial update for a single AI result without rewriting the full aggregate
 
 ---
 
@@ -282,20 +285,22 @@ src/
 │   │   └── __tests__/
 │   ├── Round/
 │   │   └── __tests__/
-│   └── Scoring/
-│       └── __tests__/
+│   ├── Scoring/
+│   │   └── __tests__/
+│   └── shared/         ← SocketData type guard, shared Presentation utilities
 ├── bootstrap/
 │   ├── http.ts
 │   ├── identity.ts
 │   ├── game.ts
 │   ├── socket.ts
-│   ├── round.ts        ← placeholder
-│   └── scoring.ts      ← placeholder
+│   ├── round.ts
+│   └── scoring.ts
 └── shared/
     ├── errors/
     │   ├── InvalidArgumentError.ts
     │   ├── ConflictError.ts
     │   └── NotFoundError.ts
+    ├── logger.ts
     ├── types/
     │   └── FastifyTypes.ts
     └── ValueObjects/

@@ -8,7 +8,7 @@ COMPOSE_PROD = docker compose -f infra/docker-compose.yml
 	dev dev-down dev-rebuild dev-logs \
 	dev-shell-backend dev-shell-frontend dev-shell-db \
 	prod prod-down prod-rebuild prod-logs \
-	generate migrate db-studio db-reset \
+	migrate migrate-deploy generate db-studio db-reset db-seed \
 	clean clean-docker clean-docker-volumes help
 
 .DEFAULT_GOAL := help
@@ -84,19 +84,25 @@ prod-logs:
 # Database
 # ===========================
 
-generate:
-	$(COMPOSE_DEV) exec backend npx prisma generate
-
 migrate:
-	$(COMPOSE_DEV) exec backend npx prisma migrate dev
+	$(COMPOSE_DEV) exec backend ./node_modules/.bin/prisma migrate dev --name $(name)
+
+migrate-deploy:
+	$(COMPOSE_PROD) exec backend ./node_modules/.bin/prisma migrate deploy
+
+generate:
+	$(COMPOSE_DEV) exec backend ./node_modules/.bin/prisma generate
 
 db-studio:
-	$(COMPOSE_DEV) exec backend npx prisma studio
+	$(COMPOSE_DEV) exec backend ./node_modules/.bin/prisma studio --browser none --port 5555
 
 db-reset:
 	@echo "WARNING: This will delete all data in the dev database."
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ]
-	$(COMPOSE_DEV) exec backend npx prisma migrate reset --force
+	$(COMPOSE_DEV) exec backend ./node_modules/.bin/prisma migrate reset --force
+
+db-seed:
+	$(COMPOSE_DEV) exec backend ./node_modules/.bin/prisma db seed
 
 # ===========================
 # Clean
@@ -146,10 +152,12 @@ help:
 	@echo "  prod-logs            Stream logs from all prod containers"
 	@echo ""
 	@echo "Database"
-	@echo "  generate             Generate Prisma Client from schema"
 	@echo "  migrate              Create and apply new migration (interactive)"
+	@echo "  migrate-deploy       Apply pending migrations in production (non-interactive)"
+	@echo "  generate             Generate Prisma Client from schema"
 	@echo "  db-studio            Open Prisma Studio"
 	@echo "  db-reset             Reset dev database (WARNING: deletes all data)"
+	@echo	"  db-seed              Seed database with data"
 	@echo ""
 	@echo "Clean"
 	@echo "  clean                Remove build artifacts and coverage"

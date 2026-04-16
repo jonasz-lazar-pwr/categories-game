@@ -2,4 +2,11 @@
 
 import { bootstrap } from '#/bootstrap.js'
 
-await bootstrap()
+const { shutdown } = await bootstrap()
+
+const handleSignal = (): void => {
+  void shutdown().finally(() => process.exit(0))
+}
+
+process.on('SIGTERM', handleSignal)
+process.on('SIGINT', handleSignal)

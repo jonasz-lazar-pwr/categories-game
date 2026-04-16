@@ -17,14 +17,14 @@ import { getMeRoute } from '#/Presentation/Identity/getMeRoute.js'
 import { changeNickRoute } from '#/Presentation/Identity/changeNickRoute.js'
 import { logoutRoute } from '#/Presentation/Identity/logoutRoute.js'
 
-export interface IdentityBootstrapResult {
+export interface IIdentityBootstrapResult {
   jwtService: IJwtService
 }
 
 export async function bootstrapIdentity(
   app: FastifyInstance,
   prisma: PrismaClient,
-): Promise<IdentityBootstrapResult> {
+): Promise<IIdentityBootstrapResult> {
   const userRepository = new UserPrismaRepository(prisma)
   const passwordService = new PasswordService()
   const jwtService = new JwtService()

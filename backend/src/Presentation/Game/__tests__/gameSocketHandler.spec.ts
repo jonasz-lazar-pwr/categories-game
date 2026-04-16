@@ -15,9 +15,23 @@ import { UserIdVo } from '#/Identity/Domain/ValueObjects/UserIdVo.js'
 import { InvalidArgumentError } from '#/shared/errors/InvalidArgumentError.js'
 import { NotFoundError } from '#/shared/errors/NotFoundError.js'
 import type { IGameRepository } from '#/Game/Domain/GameRepository.js'
+import type { IGameFacade } from '#/Game/Domain/GameFacade.js'
 import type { IStartGameService } from '#/Game/Application/StartGameService.js'
 import type { ICancelGameService } from '#/Game/Application/CancelGameService.js'
+import type { ICancelGameAfterTimeoutService } from '#/Game/Application/CancelGameAfterTimeoutService.js'
 import type { Server, Socket } from 'socket.io'
+import type pino from 'pino'
+
+const makeLogger = (): pino.Logger => {
+  const child = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }
+  return {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    child: vi.fn().mockReturnValue(child),
+  } as unknown as pino.Logger
+}
 
 const makeGameRepo = (): IGameRepository => ({
   findById: vi.fn(),
@@ -31,6 +45,18 @@ const makeStartGameService = (): IStartGameService => ({
 
 const makeCancelGameService = (): ICancelGameService => ({
   execute: vi.fn(),
+})
+
+const makeCancelGameAfterTimeoutService = (): ICancelGameAfterTimeoutService => ({
+  execute: vi.fn(),
+})
+
+const makeGameFacade = (): IGameFacade => ({
+  startRound: vi.fn(),
+  updatePlayerScore: vi.fn(),
+  updatePlayerScores: vi.fn(),
+  finishGame: vi.fn(),
+  getGameState: vi.fn(),
 })
 
 const makeSocket = (): Socket => {
@@ -82,6 +108,8 @@ describe('gameSocketHandler', () => {
   let gameRepo: IGameRepository
   let startGameService: IStartGameService
   let cancelGameService: ICancelGameService
+  let cancelGameAfterTimeoutService: ICancelGameAfterTimeoutService
+  let gameFacade: IGameFacade
   let socket: Socket
   let io: ReturnType<typeof makeIo>
   let handlers: Record<string, (...args: unknown[]) => Promise<void>>
@@ -90,18 +118,25 @@ describe('gameSocketHandler', () => {
     gameRepo = makeGameRepo()
     startGameService = makeStartGameService()
     cancelGameService = makeCancelGameService()
+    cancelGameAfterTimeoutService = makeCancelGameAfterTimeoutService()
+    gameFacade = makeGameFacade()
     socket = makeSocket()
     io = makeIo()
     handlers = captureHandlers(socket)
     vi.mocked(gameRepo.save).mockResolvedValue()
     vi.mocked(startGameService.execute).mockResolvedValue()
     vi.mocked(cancelGameService.execute).mockResolvedValue()
+    vi.mocked(gameFacade.finishGame).mockResolvedValue()
     registerGameSocketHandler(
       io as unknown as Server,
       socket,
       gameRepo,
       startGameService,
       cancelGameService,
+      cancelGameAfterTimeoutService,
+      gameFacade,
+      vi.fn().mockResolvedValue(undefined),
+      makeLogger(),
     )
   })
 
@@ -156,7 +191,7 @@ describe('gameSocketHandler', () => {
       const roomEmit = vi.fn()
       vi.mocked(io.to).mockReturnValue({ emit: roomEmit } as unknown as ReturnType<typeof io.to>)
 
-      await handlers['game:start']?.({ gameId: 'game-id-1' })
+      await handlers['game:start']?.()
 
       expect(vi.mocked(startGameService.execute)).toHaveBeenCalledOnce()
       expect(roomEmit).toHaveBeenCalledWith('game:started')
@@ -168,7 +203,7 @@ describe('gameSocketHandler', () => {
         new InvalidArgumentError('Only the host can start the game.'),
       )
 
-      await handlers['game:start']?.({ gameId: 'game-id-1' })
+      await handlers['game:start']?.()
 
       expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
         'error',
@@ -179,20 +214,11 @@ describe('gameSocketHandler', () => {
     it('emits error when not joined to a game room', async () => {
       socket.data = {}
 
-      await handlers['game:start']?.({ gameId: 'game-id-1' })
+      await handlers['game:start']?.()
 
       expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
         'error',
         expect.objectContaining({ message: 'Not joined to a game room.' }),
-      )
-    })
-
-    it('emits error when payload is invalid', async () => {
-      socket.data = { gameId: 'game-id-1', playerId: 'host-player-id', isHost: true }
-      await handlers['game:start']?.({ invalid: true })
-      expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
-        'error',
-        expect.objectContaining({ message: 'Invalid payload.' }),
       )
     })
   })
@@ -247,6 +273,91 @@ describe('gameSocketHandler', () => {
     })
   })
 
+  describe('game:next_round', () => {
+    it('emits error when not joined to a game room', async () => {
+      socket.data = {}
+      await handlers['game:next_round']?.()
+      expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({ message: 'Not joined to a game room.' }),
+      )
+    })
+
+    it('emits error when caller is not the host', async () => {
+      socket.data = { gameId: 'game-id-1', playerId: 'player-2', isHost: false }
+      await handlers['game:next_round']?.()
+      expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({ message: 'Only the host can start the next round.' }),
+      )
+    })
+
+    it('calls onGameStarted when host triggers next round', async () => {
+      socket.data = { gameId: 'game-id-1', playerId: 'host-player-id', isHost: true }
+      const game = makeLobbyGame()
+      vi.mocked(gameRepo.findById).mockResolvedValue(game)
+      const onGameStarted = vi.fn().mockResolvedValue(undefined)
+      registerGameSocketHandler(
+        io as unknown as Server,
+        socket,
+        gameRepo,
+        startGameService,
+        cancelGameService,
+        cancelGameAfterTimeoutService,
+        gameFacade,
+        onGameStarted,
+        makeLogger(),
+      )
+      const freshHandlers = captureHandlers(socket)
+      registerGameSocketHandler(
+        io as unknown as Server,
+        socket,
+        gameRepo,
+        startGameService,
+        cancelGameService,
+        cancelGameAfterTimeoutService,
+        gameFacade,
+        onGameStarted,
+        makeLogger(),
+      )
+      await freshHandlers['game:next_round']?.()
+      expect(onGameStarted).toHaveBeenCalledWith('game-id-1')
+    })
+  })
+
+  describe('game:end', () => {
+    it('emits error when not joined to a game room', async () => {
+      socket.data = {}
+      await handlers['game:end']?.()
+      expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({ message: 'Not joined to a game room.' }),
+      )
+    })
+
+    it('emits error when caller is not the host', async () => {
+      socket.data = { gameId: 'game-id-1', playerId: 'player-2', isHost: false }
+      await handlers['game:end']?.()
+      expect(vi.mocked(socket.emit)).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({ message: 'Only the host can end the game.' }),
+      )
+    })
+
+    it('calls gameFacade.finishGame and emits game:finished', async () => {
+      socket.data = { gameId: 'game-id-1', playerId: 'host-player-id', isHost: true }
+      const game = makeLobbyGame()
+      vi.mocked(gameRepo.findById).mockResolvedValue(game)
+      const roomEmit = vi.fn()
+      vi.mocked(io.to).mockReturnValue({ emit: roomEmit } as unknown as ReturnType<typeof io.to>)
+
+      await handlers['game:end']?.()
+
+      expect(vi.mocked(gameFacade.finishGame)).toHaveBeenCalledOnce()
+      expect(roomEmit).toHaveBeenCalledWith('game:finished')
+    })
+  })
+
   describe('disconnect', () => {
     it('emits game:host_disconnected with timeoutSeconds when host disconnects', async () => {
       socket.data = { gameId: 'game-id-1', playerId: 'host-player-id', isHost: true }
@@ -272,6 +383,18 @@ describe('gameSocketHandler', () => {
       expect(roomEmit).toHaveBeenCalledWith('game:player_disconnected', {
         playerId: 'host-player-id',
       })
+    })
+
+    it('emits game:cancelled when last non-host player disconnects', async () => {
+      socket.data = { gameId: 'game-id-1', playerId: 'host-player-id', isHost: false }
+      const game = makeLobbyGame()
+      vi.mocked(gameRepo.findById).mockResolvedValue(game)
+      const roomEmit = vi.fn()
+      vi.mocked(io.to).mockReturnValue({ emit: roomEmit } as unknown as ReturnType<typeof io.to>)
+
+      await handlers['disconnect']?.()
+
+      expect(roomEmit).toHaveBeenCalledWith('game:cancelled')
     })
 
     it('does nothing when socket.data has no gameId', async () => {

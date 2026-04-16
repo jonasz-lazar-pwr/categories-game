@@ -16,7 +16,7 @@ import type { UserIdVo } from '#/Identity/Domain/ValueObjects/UserIdVo.js'
 
 const MAX_PLAYERS = 20
 
-export interface CreateGameConfig {
+export interface ICreateGameConfig {
   alphabetPreset: AlphabetPreset
   roundCount: RoundCountVo
   categories: CategoryConfig[]
@@ -58,7 +58,7 @@ export class GameAggregate {
     hostPlayerId: PlayerIdVo,
     hostUserId: UserIdVo,
     hostNick: string,
-    config: CreateGameConfig,
+    config: ICreateGameConfig,
   ): GameAggregate {
     const hostEntry = new PlayerEntry(hostPlayerId, hostUserId, hostNick, true, false, null, 0)
     return new GameAggregate(
